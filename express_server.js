@@ -16,16 +16,7 @@ let urlDatabase = {
 };
 
 const users = {
-  "userRandomID": {
-    id: "userRandomID",
-    email: "user@example.com",
-    password: "purple-monkey-dinosaur"
-  },
- "user2RandomID": {
-    id: "user2RandomID",
-    email: "user2@example.com",
-    password: "dishwasher-funk"
-  }
+
 };
 
 app.get("/", (req, res) => {
@@ -48,10 +39,7 @@ app.get("/urls/new", (req, res) =>  {
 });
 
 app.get("/register", (req, res) => {
-  let templateVars = {
-    username: req.cookies["username"]
-  }
-  res.render("urls_register", templateVars);
+  res.render("urls_register");
 });
 
 app.get("/urls/:shortURL", (req, res) => {
@@ -97,6 +85,23 @@ app.post("/login", (req, res) => {
 
 app.post("/logout", (req, res) => {
   res.clearCookie('username');
+  res.redirect("/urls");
+});
+
+app.post("/register", (req, res) => {
+  const userID = shortURLgenerator();
+  // const userEmail = req.body.email;
+  // const userPassowrd = req.body.password;
+
+  const userInfo = {
+    "userID": userID,
+    "userEmail": req.body.email,
+    "userPassowrd": req.body.password
+  }
+
+  users[userID] = userInfo;
+  console.log(users);
+  res.cookie("user_id", userID);
   res.redirect("/urls");
 });
 
