@@ -2,12 +2,6 @@
 
 <body style="font-size:20px; padding:50px;">
 
-  <h1>Tiny App</h1>
-  <a href="#">Tiny App URL</a>
-  <br>
-  <br>
-  <p><strong>My URLs</strong></p>
-
 <% if (urls) { %>
   <% for (let key in urls) { %>
     <li> <strong><%=key%></strong>: <%= urls[key] %></li>

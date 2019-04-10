@@ -31,8 +31,14 @@ app.get("/urls/new", (req, res) =>  {
   const cookieUserName = {
     username: req.cookies["username"]
   }
-
   res.render("urls_new", cookieUserName);
+});
+
+app.get("/register", (req, res) => {
+  let templateVars = {
+    username: req.cookies["username"]
+  }
+  res.render("urls_register", templateVars);
 });
 
 app.get("/urls/:shortURL", (req, res) => {
@@ -52,6 +58,7 @@ app.get("/u/:shortURL", (req, res) => {
 app.post("/urls", (req, res) => {
   const randomURL = shortURLgenerator();
   const longURL = req.body.longURL;
+
   urlDatabase[randomURL] = longURL;
   res.redirect(`/urls/${randomURL}`);
 });
@@ -66,7 +73,6 @@ app.post("/urls/:shortURL/delete", (req,res) => {
 app.post("/urls/:id/update", (req, res) => {
   const id = req.params.id;
   const newURL = req.body.longURL;
-
   urlDatabase[id] = newURL;
   res.redirect("/urls");
 });
