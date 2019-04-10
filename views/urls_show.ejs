@@ -8,6 +8,10 @@
   <br>
   <p><strong>My URLs</strong></p>
   <strong><%= shortURL %></strong>: <%= longURL %>
+    <form method="POST" action="/urls/<%= shortURL %>/update">
+      <input class="form-control" type="text" name="longURL" placeholder="http://" style="width: 300px; margin: 1em">
+      <button type="submit" class="btn btn-dark>Update</button>
+    </form>
 
 
 </body>
