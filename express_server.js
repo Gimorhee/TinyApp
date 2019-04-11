@@ -16,10 +16,7 @@ let urlDatabase = {
 };
 
 const users = {
-  fzAjZb:
-   { userID: 'fzAjZb',
-     userEmail: 'd@gmail.com',
-     userPassword: '12' }
+
 };
 
 app.get("/", (req, res) => {
@@ -86,7 +83,7 @@ app.post("/urls/:id/update", (req, res) => {
 });
 
 function findUserId(email){
-  for(var key in users){
+  for(let key in users){
     if(users[key].userEmail === email){
       return key;
     }

@@ -10,9 +10,10 @@
   <title>TinyApp</title>
 
   <h1><strong>TinyApp</strong></h1>
-  <a href="#">Tiny App URL</a>
+  <div><a href="/urls">URLs</a>|<a href="/urls/new">Create New TinyURL</a></div>
 
-  <p><strong>My URLs</strong></p>
+
+
 
   <% if (user) { -%>
     <h5>Logged in As: <%= user.userEmail %></h5>
@@ -28,12 +29,9 @@
     <input class="form-control" type="text" name="username" placeholder="Enter Username" style="width: 300px; margin: 1em">
       <button type="submit" class="btn btn-dark">Sign-in</button>
     </form> -->
-    <a href="/register">Register</a>
-    <br>
-    <a href="/login">Log In</a>
-    <br>
 
-
+    <div><a href="/register">Register</a>|<a href="/login">Log In</a></div>
+    <br>
   <% } -%>
 
 </head>

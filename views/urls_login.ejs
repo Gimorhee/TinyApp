@@ -14,10 +14,20 @@
 
 <body style="font-size:20px; padding:50px;">
 
+<div><a href="/login">Login</a> | <a href="/register">Register</a></div>
     <form method="POST" action="/login">
-      <input class="form-control" type="email" name="email" placeholder="Enter Email Address" style="width: 300px; margin: 1em">
-      <input class="form-control" type="password" name="password" placeholder="Enter Password" style="width: 300px; margin: 1em">
-      <button type="submit" class="btn btn-dark">Log-in</button>
+      <h3>Log In</h3>
+      <div>
+        <div>
+          <p>Email: </p>
+          <input class="form-control" type="email" name="email" placeholder="Enter Email Address" style="width: 300px; margin: 1em">
+        </div>
+        <div>
+          <p>Password: </p>
+          <input class="form-control" type="password" name="password" placeholder="Enter Password" style="width: 300px; margin: 1em">
+        </div>
+      </div>
+      <button type="submit" class="btn btn-dark btn-lg">Log In</button>
     </form>
 
 </body>
