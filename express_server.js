@@ -16,7 +16,10 @@ let urlDatabase = {
 };
 
 const users = {
-
+  fzAjZb:
+   { userID: 'fzAjZb',
+     userEmail: 'd@gmail.com',
+     userPassword: '123123' }
 };
 
 app.get("/", (req, res) => {
@@ -26,27 +29,31 @@ app.get("/", (req, res) => {
 app.get("/urls", (req, res) => {
   let templateVars = {
     urls: urlDatabase,
-    username: req.cookies["username"]
+    user: users[req.cookies['user_id']]
   };
   res.render("urls_index", templateVars);
 });
 
 app.get("/urls/new", (req, res) =>  {
-  const cookieUserName = {
-    username: req.cookies["username"]
-  }
-  res.render("urls_new", cookieUserName);
+  let templateVars = {
+    user: users[req.cookies['user_id']]
+  };
+  res.render("urls_new", templateVars);
 });
 
 app.get("/register", (req, res) => {
   res.render("urls_register");
 });
 
+app.get("/login", (req, res) => {
+  res.render("urls_login");
+});
+
 app.get("/urls/:shortURL", (req, res) => {
   let templateVars = {
     shortURL: req.params.shortURL,
     longURL: urlDatabase[req.params.shortURL],
-    username: req.cookies["username"]
+    user: users[req.cookies['user_id']]
   };
   res.render("urls_show", templateVars);
 });
@@ -79,7 +86,18 @@ app.post("/urls/:id/update", (req, res) => {
 });
 
 app.post("/login", (req, res) => {
-  res.cookie('username', req.body.username);
+  res.cookie('user_id', req.body.email);
+  const email = req.body.email
+  const password = req.body.password;
+
+  if(!emailLookUp(email)){
+    res.status(403).send("Status Code 403: Your Email address does not match! Please try again.");
+  }
+
+  if(!comparePassword(password, email)){
+      res.status(403).send("Status Code 403: Your password does not match! Please try again.");
+  }
+
   res.redirect("/urls");
 });
 
@@ -90,20 +108,47 @@ app.post("/logout", (req, res) => {
 
 app.post("/register", (req, res) => {
   const userID = shortURLgenerator();
-  // const userEmail = req.body.email;
-  // const userPassowrd = req.body.password;
 
   const userInfo = {
     "userID": userID,
     "userEmail": req.body.email,
-    "userPassowrd": req.body.password
+    "userPassword": req.body.password
+  }
+
+  if(userInfo["userEmail"] == '' || userInfo["userPassword"] == ''){
+    res.status(400).send("Status Code 400: Please enter email and password correctly.");
+  }
+
+  if(emailLookUp(req.body.email)){
+    res.send("This Email address already exists. Please try again with new Email address.");
   }
 
   users[userID] = userInfo;
   console.log(users);
-  res.cookie("user_id", userID);
+  res.cookie("user_id", req.body.email);
   res.redirect("/urls");
 });
+
+//Function for checking if user entered email already exists or not.
+function emailLookUp (email) {
+  for (key in users) {
+    if(users[key].userEmail === email) {
+      return true;
+    }
+  } return false;
+}
+
+//Function for checking if user password is correct or not.
+function comparePassword (password, email) {
+  for (key in users) {
+    if(emailLookUp(email)){
+      if(users[key].userPassword === password) {
+        return true;
+      }
+    }
+  } return false;
+}
+
 
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
