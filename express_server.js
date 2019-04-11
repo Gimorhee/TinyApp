@@ -19,7 +19,7 @@ const users = {
   fzAjZb:
    { userID: 'fzAjZb',
      userEmail: 'd@gmail.com',
-     userPassword: '123123' }
+     userPassword: '12' }
 };
 
 app.get("/", (req, res) => {
@@ -85,9 +85,16 @@ app.post("/urls/:id/update", (req, res) => {
   res.redirect("/urls");
 });
 
+function findUserId(email){
+  for(var key in users){
+    if(users[key].userEmail === email){
+      return key;
+    }
+  }
+}
+
 app.post("/login", (req, res) => {
-  res.cookie('user_id', req.body.email);
-  const email = req.body.email
+  const email = req.body.email;
   const password = req.body.password;
 
   if(!emailLookUp(email)){
@@ -98,11 +105,17 @@ app.post("/login", (req, res) => {
       res.status(403).send("Status Code 403: Your password does not match! Please try again.");
   }
 
-  res.redirect("/urls");
+  let user_id = findUserId(email);
+  if(user_id){
+      res.cookie('user_id', user_id);
+      res.redirect("/urls");
+  } else{
+    res.send("Sorry the user is not found");
+  }
 });
 
 app.post("/logout", (req, res) => {
-  res.clearCookie('username');
+  res.clearCookie('user_id');
   res.redirect("/urls");
 });
 
@@ -120,12 +133,12 @@ app.post("/register", (req, res) => {
   }
 
   if(emailLookUp(req.body.email)){
-    res.send("This Email address already exists. Please try again with new Email address.");
+    res.send("This Email address already exists. Please try again with different Email address.");
   }
 
   users[userID] = userInfo;
   console.log(users);
-  res.cookie("user_id", req.body.email);
+  res.cookie("user_id", userID);
   res.redirect("/urls");
 });
 
