@@ -10,12 +10,11 @@
   <title>TinyApp</title>
 
   <h1><strong>TinyApp</strong></h1>
-  <div><a href="/urls">URLs</a>|<a href="/urls/new">Create New TinyURL</a></div>
-
 
 
 
   <% if (user) { -%>
+    <div><a href="/urls">URLs</a>|<a href="/urls/new">Create New TinyURL</a></div>
     <h5>Logged in As: <%= user.userEmail %></h5>
     <form method="POST" action="/logout">
       <button type="submit" class="btn btn-dark">Logout</button>

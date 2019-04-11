@@ -16,7 +16,10 @@ let urlDatabase = {
 };
 
 const users = {
-
+  '1AjexG':
+   { userID: '1AjexG',
+     userEmail: 'dongyunrhee@gmail.com',
+     userPassword: '123' }
 };
 
 app.get("/", (req, res) => {
@@ -31,10 +34,14 @@ app.get("/urls", (req, res) => {
   res.render("urls_index", templateVars);
 });
 
+
 app.get("/urls/new", (req, res) =>  {
   let templateVars = {
     user: users[req.cookies['user_id']]
   };
+  if(!req.cookies['user_id']){
+    res.redirect("/login");
+  }
   res.render("urls_new", templateVars);
 });
 
@@ -82,6 +89,7 @@ app.post("/urls/:id/update", (req, res) => {
   res.redirect("/urls");
 });
 
+//Finding userID (key) at certain email address.
 function findUserId(email){
   for(let key in users){
     if(users[key].userEmail === email){
