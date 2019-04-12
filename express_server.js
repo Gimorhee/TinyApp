@@ -4,11 +4,15 @@ const PORT = 8080; // default port 8080
 const bodyParser = require("body-parser");
 const cookieParser = require('cookie-parser')
 const shortURLgenerator = require("./shortURLgenerator");
+const bcrypt = require('bcrypt');
 
 // Setting up view engine to ejs
 app.set('view engine', 'ejs');
 app.use(bodyParser.urlencoded({extended: true}));
 app.use(cookieParser());
+
+const password = "purple-monkey-dinosaur";
+const hashedPassword = bcrypt.hashSync(password, 10);
 
 const urlDatabase = {
   b6UTxQ: { longURL: "https://www.tsn.ca", userID: "aJ48W" },
@@ -120,6 +124,8 @@ app.post("/login", (req, res) => {
   const email = req.body.email;
   const password = req.body.password;
 
+
+
   if(!emailLookUp(email)){
     res.status(403).send("Status Code 403: Your Email address does not match! Please try again.");
   }
@@ -148,7 +154,7 @@ app.post("/register", (req, res) => {
   const userInfo = {
     "userID": userID,
     "userEmail": req.body.email,
-    "userPassword": req.body.password
+    "userPassword": bcrypt.hashSync(req.body.password, 10)
   }
 
   if(userInfo["userEmail"] == '' || userInfo["userPassword"] == ''){
@@ -178,11 +184,12 @@ function emailLookUp (email) {
 function comparePassword (password, email) {
   for (key in users) {
     if(emailLookUp(email)){
-      if(users[key].userPassword === password) {
+       if(bcrypt.compareSync(password, users[key].userPassword)) {
         return true;
       }
     }
-  } return false;
+  }
+  return false;
 }
 
 //Checking if the user is logged in and assignin new values.
