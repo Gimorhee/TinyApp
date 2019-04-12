@@ -1,6 +1,6 @@
 const express = require("express");
 const app = express();
-const PORT = 8080; // default port 8080
+const PORT = 8080;
 const bodyParser = require("body-parser");
 const shortURLgenerator = require("./shortURLgenerator");
 const bcrypt = require('bcrypt');
@@ -9,36 +9,38 @@ const cookieSession = require('cookie-session');
 
 // Setting up view engine to ejs
 app.set('view engine', 'ejs');
-app.use(bodyParser.urlencoded({extended: true}));
+
+app.use(bodyParser.urlencoded({
+  extended: true
+}));
 app.use(cookieSession({
   name: "session",
   secret: "test"
 }));
-// app.use(cookieParser());
 
 const password = "purple-monkey-dinosaur";
 const hashedPassword = bcrypt.hashSync(password, 10);
 
+//Database object for testing/checking/adding in new data
 const urlDatabase = {
-  b6UTxQ: { longURL: "https://www.tsn.ca", userID: "aJ48W" },
-  i3BoGr: { longURL: "https://www.google.ca", userID: "aJ48lW" }
+
 };
 
+//Object database for testing cases for userID, Email and password
 const users = {
-  'aJ48W':
-   { userID: 'aJ48W',
-     userEmail: 'dongyunrhee@gmail.com',
-     userPassword: '123' }
+
 };
 
+//Home page that redirects users to urls page when logged in and to login page when not logged in.
 app.get("/", (req, res) => {
-  if(req.session.user_id) {
+  if (req.session.user_id) {
     res.redirect("/urls");
   } else {
     res.redirect("/login");
   }
 });
 
+//Url page that when users are logged in direct them to same url page. When not logged in, redirect to registration page.
 app.get("/urls", (req, res) => {
   const userID = req.session.user_id;
   const URLs = urlsForUser(userID);
@@ -48,7 +50,7 @@ app.get("/urls", (req, res) => {
     user: users[userID]
   };
 
-  if(userID){
+  if (userID) {
     res.render("urls_index", templateVars);
     res.redirect("/urls");
   } else {
@@ -56,49 +58,62 @@ app.get("/urls", (req, res) => {
   }
 });
 
-
-app.get("/urls/new", (req, res) =>  {
+//Creating new URLs page. If users are not logged in, redirect them to login page
+app.get("/urls/new", (req, res) => {
   let templateVars = {
     user: users[req.session.user_id]
   };
-  if(!req.session.user_id){
+
+  if (!req.session.user_id) {
     res.redirect("/login");
   }
   res.render("urls_new", templateVars);
 });
 
+//Registration page where users can register with their Email address.
 app.get("/register", (req, res) => {
   res.render("urls_register");
 });
 
+//Login page where users can log in with their Email address.
 app.get("/login", (req, res) => {
   res.render("urls_login");
 });
 
+//Page after new URL creation where users can see their shortened URL with original URL. Users get to update their original URL with update button.
+//When users are not logged in, they are redirected to the registration page. If logged in but when the shortened URL does not belong to them or the
+//URL is not found, error message pops up
 app.get("/urls/:shortURL", (req, res) => {
   const foundURL = urlDatabase[req.params.shortURL];
 
-  if(!req.session.user_id){
+  if (!req.session.user_id) {
     res.render("registration");
-    return;
-  }
-  if(!foundURL) {
-    res.render("ErrorMessage");
-    return;
-  }
+  } else {
+    if (!foundURL) {
+      res.render("ErrorMessage");
+      return;
+    }
 
-  let templateVars = {
-    shortURL: req.params.shortURL,
-    longURL: foundURL.longURL,
-    user: users[req.session.user_id]
-  };
-  res.render("urls_show", templateVars);
+    if (urlDatabase[req.params.shortURL].userID !== req.session.user_id) {
+      res.render("ErrorMessage");
+    } else {
+
+      let templateVars = {
+        shortURL: req.params.shortURL,
+        longURL: foundURL.longURL,
+        user: users[req.session.user_id]
+      };
+
+      res.render("urls_show", templateVars);
+    }
+  }
 });
 
+//When users input endpoint of /u/shortendedURL, they are redirected to the original website. If the original URL is invalid, error message pops up.
 app.get("/u/:shortURL", (req, res) => {
   const longURL = urlDatabase[req.params.shortURL].longURL;
 
-  if(longURL.includes('https://')){
+  if (longURL.includes('https://') || (longURL.includes('http://'))) {
     res.redirect(longURL);
   } else {
     res.render("ErrorMessage");
@@ -106,40 +121,43 @@ app.get("/u/:shortURL", (req, res) => {
 
 });
 
+//
 app.post("/urls", (req, res) => {
   const randomURL = shortURLgenerator();
   const longURL = req.body.longURL;
-  urlDatabase[randomURL] = {longURL: longURL, userID: req.session.user_id};
+  urlDatabase[randomURL] = {
+    longURL: longURL,
+    userID: req.session.user_id
+  };
 
-  console.log(urlDatabase);
 
   // urlDatabase[randomURL] = longURL;
   res.redirect(`/urls/${randomURL}`);
 });
 
 
-app.post("/urls/:shortURL/delete", (req,res) => {
+app.post("/urls/:shortURL/delete", (req, res) => {
   const userID = req.session.user_id;
   const shortURL = req.params.shortURL;
 
-  if(userID){
-      if(checkingUserID(userID, shortURL)){
-        delete urlDatabase[shortURL];
-        res.redirect('/urls');
+  if (userID) {
+    if (checkingUserID(userID, shortURL)) {
+      delete urlDatabase[shortURL];
+      res.redirect('/urls');
     } else {
-        res.send("Nice try 🤟");
+      res.send("Nice try 🤟");
     }
   } else {
-      res.send("Nice try 🤟");
+    res.send("Nice try 🤟");
   }
 
   const foundURL = urlDatabase[shortURL];
 
-  if(!req.session.user_id){
+  if (!req.session.user_id) {
     res.render("registration");
     return;
   }
-  if(!foundURL) {
+  if (!foundURL) {
     res.render("ErrorMessage");
     return;
   }
@@ -149,7 +167,10 @@ app.post("/urls/:id/update", (req, res) => {
   const id = req.params.id;
   const newURL = req.body.longURL;
   if (newURL) {
-    urlDatabase[id] = {longURL: newURL, userID: urlDatabase[id].userID};
+    urlDatabase[id] = {
+      longURL: newURL,
+      userID: urlDatabase[id].userID
+    };
     //
   }
   res.redirect("/urls");
@@ -160,19 +181,19 @@ app.post("/login", (req, res) => {
   const password = req.body.password;
 
 
-  if(!emailLookUp(email)){
+  if (!emailLookUp(email)) {
     res.status(403).send("Status Code 403: Your Email address does not match! Please try again.");
   }
 
-  if(!comparePassword(password, email)){
-      res.status(403).send("Status Code 403: Your password does not match! Please try again.");
+  if (!comparePassword(password, email)) {
+    res.status(403).send("Status Code 403: Your password does not match! Please try again.");
   }
 
   let user_id = findUserId(email);
-  if(user_id){
-      req.session.user_id = user_id;
-      res.redirect("/urls");
-  } else{
+  if (user_id) {
+    req.session.user_id = user_id;
+    res.redirect("/urls");
+  } else {
     res.send("Sorry the user is not found");
   }
 });
@@ -191,12 +212,12 @@ app.post("/register", (req, res) => {
     "userPassword": bcrypt.hashSync(req.body.password, 10)
   }
 
-  if(userInfo["userEmail"] == '' || userInfo["userPassword"] == ''){
+  if (userInfo["userEmail"] == '' || userInfo["userPassword"] == '') {
     res.render("NoInputErrorMessage");
     // res.status(400).send("Status Code 400: Please enter email and password correctly.");
   }
 
-  if(emailLookUp(req.body.email)){
+  if (emailLookUp(req.body.email)) {
     res.render("EmailError");
     // res.send("This Email address already exists. Please try again with different Email address.");
   }
@@ -207,19 +228,20 @@ app.post("/register", (req, res) => {
 });
 
 //Function for checking if user entered email already exists or not.
-function emailLookUp (email) {
+function emailLookUp(email) {
   for (key in users) {
-    if(users[key].userEmail === email) {
+    if (users[key].userEmail === email) {
       return true;
     }
-  } return false;
+  }
+  return false;
 }
 
 //Function for checking if user password is correct or not.
-function comparePassword (password, email) {
+function comparePassword(password, email) {
   for (key in users) {
-    if(emailLookUp(email)){
-       if(bcrypt.compareSync(password, users[key].userPassword)) {
+    if (emailLookUp(email)) {
+      if (bcrypt.compareSync(password, users[key].userPassword)) {
         return true;
       }
     }
@@ -227,12 +249,12 @@ function comparePassword (password, email) {
   return false;
 }
 
-//Checking if the user is logged in and assignin new values.
+//Checking if the user is logged in and assigning new values.
 function urlsForUser(id) {
-let newURLs = {};
-  for(let key in urlDatabase){
-    if (urlDatabase[key].userID === id){
-    newURLs[key] = urlDatabase[key];
+  let newURLs = {};
+  for (let key in urlDatabase) {
+    if (urlDatabase[key].userID === id) {
+      newURLs[key] = urlDatabase[key];
     }
   }
   return newURLs;
@@ -240,18 +262,19 @@ let newURLs = {};
 
 //Finding userID (key) at certain email address.
 function findUserId(email) {
-  for(let key in users){
-    if(users[key].userEmail === email){
+  for (let key in users) {
+    if (users[key].userEmail === email) {
       return key;
     }
   }
 }
 
+//Checking if userID with certain shortURL matches with logged in ID
 function checkingUserID(id, shortURL) {
-    return (urlDatabase[shortURL].userID === id);
+  return (urlDatabase[shortURL].userID === id);
 }
 
+//Checking if the server is running and listening to port 8080.
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
 });
-

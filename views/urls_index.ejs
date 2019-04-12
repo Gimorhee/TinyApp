@@ -8,7 +8,9 @@
       <li> <strong><%=key%></strong>: <%= urls[key].longURL %></li>
       <form method="POST" action="/urls/<%= key %>/delete">
         <button type="submit" class="btn btn-dark">Delete</button>
-        <a href="/urls/<%=key%>">Link to edit</a>
+      </form>
+      <form method="GET" action="/urls/<%= key %>">
+        <button type="submit" class="btn btn-dark">Edit</button>
       </form>
   <% } %>
 <% } %>
