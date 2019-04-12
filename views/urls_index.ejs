@@ -4,13 +4,18 @@
 
 <% if (urls) { %>
   <% for (let key in urls) { %>
-    <li> <strong><%=key%></strong>: <%= urls[key] %></li>
-    <form method="POST" action="/urls/<%= key %>/delete">
-      <button type="submit" class="btn btn-dark">Delete</button>
-    </form>
+<!--       if (urls[key].userID === user.userID) {-->
+      <li> <strong><%=key%></strong>: <%= urls[key].longURL %></li>
+      <form method="POST" action="/urls/<%= key %>/delete">
+        <button type="submit" class="btn btn-dark">Delete</button>
+        <a href="/urls/<%=key%>">Link to edit</a>
+      </form>
   <% } %>
-<%} %>
+<% } %>
+<!-- } -->
 </body>
 
 </html>
+
+
 
