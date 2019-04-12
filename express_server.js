@@ -121,7 +121,7 @@ app.get("/u/:shortURL", (req, res) => {
 
 });
 
-//
+//Creating new randomized short URL for the users. Creating/posting new user database with certain shortened URL, users input URL and their user ID into the database.
 app.post("/urls", (req, res) => {
   const randomURL = shortURLgenerator();
   const longURL = req.body.longURL;
@@ -130,12 +130,13 @@ app.post("/urls", (req, res) => {
     userID: req.session.user_id
   };
 
-
   // urlDatabase[randomURL] = longURL;
   res.redirect(`/urls/${randomURL}`);
 });
 
-
+//When users click delete button, shortURL and the long URL are being deleted. If users are logged in and their user ID and password match, users are able to delete and redirected to URL page.
+//When users are not logged in and try to delete certain URLs, they are redirected to error message page.
+//When users are not logged in, they are redirected to registration page and when then shortened URL is not found, error message pops up.
 app.post("/urls/:shortURL/delete", (req, res) => {
   const userID = req.session.user_id;
   const shortURL = req.params.shortURL;
@@ -163,6 +164,8 @@ app.post("/urls/:shortURL/delete", (req, res) => {
   }
 });
 
+//When users click update button, users are able to update/edit the long URL they entered. If users do not wish to edit the URL, they can just click update button.
+//After updating the URL, users are redirected to URL page.
 app.post("/urls/:id/update", (req, res) => {
   const id = req.params.id;
   const newURL = req.body.longURL;
@@ -171,11 +174,13 @@ app.post("/urls/:id/update", (req, res) => {
       longURL: newURL,
       userID: urlDatabase[id].userID
     };
-    //
+
   }
   res.redirect("/urls");
 });
 
+//Users are redirected to login page. If users enter Email address / password  that does not match with the database, error messages pop up.
+//If entered Email address and password match with the database, users are redirected to the URL page.
 app.post("/login", (req, res) => {
   const email = req.body.email;
   const password = req.body.password;
@@ -198,11 +203,17 @@ app.post("/login", (req, res) => {
   }
 });
 
+//After logging in, if users click logout button, they are logged out and redirected to URL page. When logged out, users cookie information is cleared.
+//When users are not logged in and try to access URL page, "registration/login required" message pops up.
 app.post("/logout", (req, res) => {
   res.clearCookie('session');
   res.redirect("/urls");
 });
 
+//After entering new Email address and passwored, users are able to register by clicking register button.
+//If users do not enter any data in Email/password section, error message pops up.
+//If users enter Email address and password that do not match with the database, error message pop up.
+//If users enter Email address that already exists, error message pops up.
 app.post("/register", (req, res) => {
   const userID = shortURLgenerator();
 
