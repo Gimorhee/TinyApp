@@ -2,14 +2,19 @@ const express = require("express");
 const app = express();
 const PORT = 8080; // default port 8080
 const bodyParser = require("body-parser");
-const cookieParser = require('cookie-parser')
 const shortURLgenerator = require("./shortURLgenerator");
 const bcrypt = require('bcrypt');
+const cookieSession = require('cookie-session');
+// const cookieParser = require('cookie-parser')
 
 // Setting up view engine to ejs
 app.set('view engine', 'ejs');
 app.use(bodyParser.urlencoded({extended: true}));
-app.use(cookieParser());
+app.use(cookieSession({
+  name: "session",
+  secret: "test"
+}));
+// app.use(cookieParser());
 
 const password = "purple-monkey-dinosaur";
 const hashedPassword = bcrypt.hashSync(password, 10);
@@ -27,27 +32,36 @@ const users = {
 };
 
 app.get("/", (req, res) => {
-  res.send(urlDatabase)
-  res.send("Hello!");
+  if(req.session.user_id) {
+    res.redirect("/urls");
+  } else {
+    res.redirect("/login");
+  }
 });
 
 app.get("/urls", (req, res) => {
-  const userID = req.cookies["user_id"];
+  const userID = req.session.user_id;
   const URLs = urlsForUser(userID);
 
   let templateVars = {
     urls: URLs,
     user: users[userID]
   };
-  res.render("urls_index", templateVars);
+
+  if(userID){
+    res.render("urls_index", templateVars);
+    res.redirect("/urls");
+  } else {
+    res.render("registration", templateVars);
+  }
 });
 
 
 app.get("/urls/new", (req, res) =>  {
   let templateVars = {
-    user: users[req.cookies['user_id']]
+    user: users[req.session.user_id]
   };
-  if(!req.cookies['user_id']){
+  if(!req.session.user_id){
     res.redirect("/login");
   }
   res.render("urls_new", templateVars);
@@ -64,28 +78,38 @@ app.get("/login", (req, res) => {
 app.get("/urls/:shortURL", (req, res) => {
   const foundURL = urlDatabase[req.params.shortURL];
 
-  if(!foundURL){
-    res.send("URL not found.");
+  if(!req.session.user_id){
+    res.render("registration");
     return;
   }
+  if(!foundURL) {
+    res.render("ErrorMessage");
+    return;
+  }
+
   let templateVars = {
     shortURL: req.params.shortURL,
     longURL: foundURL.longURL,
-    user: users[req.cookies['user_id']]
+    user: users[req.session.user_id]
   };
   res.render("urls_show", templateVars);
 });
 
 app.get("/u/:shortURL", (req, res) => {
   const longURL = urlDatabase[req.params.shortURL].longURL;
-  console.log(longURL);
-  res.redirect(longURL);
+
+  if(longURL.includes('https://')){
+    res.redirect(longURL);
+  } else {
+    res.render("ErrorMessage");
+  }
+
 });
 
 app.post("/urls", (req, res) => {
   const randomURL = shortURLgenerator();
   const longURL = req.body.longURL;
-  urlDatabase[randomURL] = {longURL: longURL, userID: req.cookies.user_id};
+  urlDatabase[randomURL] = {longURL: longURL, userID: req.session.user_id};
 
   console.log(urlDatabase);
 
@@ -95,7 +119,7 @@ app.post("/urls", (req, res) => {
 
 
 app.post("/urls/:shortURL/delete", (req,res) => {
-  const userID = req.cookies["user_id"];
+  const userID = req.session.user_id;
   const shortURL = req.params.shortURL;
 
   if(userID){
@@ -107,6 +131,17 @@ app.post("/urls/:shortURL/delete", (req,res) => {
     }
   } else {
       res.send("Nice try 🤟");
+  }
+
+  const foundURL = urlDatabase[shortURL];
+
+  if(!req.session.user_id){
+    res.render("registration");
+    return;
+  }
+  if(!foundURL) {
+    res.render("ErrorMessage");
+    return;
   }
 });
 
@@ -125,7 +160,6 @@ app.post("/login", (req, res) => {
   const password = req.body.password;
 
 
-
   if(!emailLookUp(email)){
     res.status(403).send("Status Code 403: Your Email address does not match! Please try again.");
   }
@@ -136,7 +170,7 @@ app.post("/login", (req, res) => {
 
   let user_id = findUserId(email);
   if(user_id){
-      res.cookie('user_id', user_id);
+      req.session.user_id = user_id;
       res.redirect("/urls");
   } else{
     res.send("Sorry the user is not found");
@@ -144,7 +178,7 @@ app.post("/login", (req, res) => {
 });
 
 app.post("/logout", (req, res) => {
-  res.clearCookie('user_id');
+  res.clearCookie('session');
   res.redirect("/urls");
 });
 
@@ -158,16 +192,17 @@ app.post("/register", (req, res) => {
   }
 
   if(userInfo["userEmail"] == '' || userInfo["userPassword"] == ''){
-    res.status(400).send("Status Code 400: Please enter email and password correctly.");
+    res.render("NoInputErrorMessage");
+    // res.status(400).send("Status Code 400: Please enter email and password correctly.");
   }
 
   if(emailLookUp(req.body.email)){
-    res.send("This Email address already exists. Please try again with different Email address.");
+    res.render("EmailError");
+    // res.send("This Email address already exists. Please try again with different Email address.");
   }
 
   users[userID] = userInfo;
-  console.log(users);
-  res.cookie("user_id", userID);
+  req.session.user_id = userInfo.userID;
   res.redirect("/urls");
 });
 
@@ -212,7 +247,6 @@ function findUserId(email) {
   }
 }
 
-//
 function checkingUserID(id, shortURL) {
     return (urlDatabase[shortURL].userID === id);
 }
