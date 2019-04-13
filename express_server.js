@@ -18,9 +18,6 @@ app.use(cookieSession({
   secret: "test"
 }));
 
-const password = "purple-monkey-dinosaur";
-const hashedPassword = bcrypt.hashSync(password, 10);
-
 //Database object for testing/checking/adding in new data
 const urlDatabase = {
 
@@ -30,6 +27,53 @@ const urlDatabase = {
 const users = {
 
 };
+
+//Function for checking if user entered email already exists or not.
+function emailLookUp(email) {
+  for (key in users) {
+    if (users[key].userEmail === email) {
+      return true;
+    }
+  }
+  return false;
+}
+
+//Function for checking if user password is correct or not.
+function comparePassword(password, email) {
+  for (key in users) {
+    if (emailLookUp(email)) {
+      if (bcrypt.compareSync(password, users[key].userPassword)) {
+        return true;
+      }
+    }
+  }
+  return false;
+}
+
+//Checking if the user is logged in and assigning new values.
+function urlsForUser(id) {
+  let newURLs = {};
+  for (let key in urlDatabase) {
+    if (urlDatabase[key].userID === id) {
+      newURLs[key] = urlDatabase[key];
+    }
+  }
+  return newURLs;
+}
+
+//Finding userID (key) at certain email address.
+function findUserId(email) {
+  for (let key in users) {
+    if (users[key].userEmail === email) {
+      return key;
+    }
+  }
+}
+
+//Checking if userID with certain shortURL matches with logged in ID
+function checkingUserID(id, shortURL) {
+  return (urlDatabase[shortURL].userID === id);
+}
 
 //Home page that redirects users to urls page when logged in and to login page when not logged in.
 app.get("/", (req, res) => {
@@ -52,7 +96,7 @@ app.get("/urls", (req, res) => {
 
   if (userID) {
     res.render("urls_index", templateVars);
-    res.redirect("/urls");
+    //res.redirect("/urls");
   } else {
     res.render("registration", templateVars);
   }
@@ -140,28 +184,26 @@ app.post("/urls", (req, res) => {
 app.post("/urls/:shortURL/delete", (req, res) => {
   const userID = req.session.user_id;
   const shortURL = req.params.shortURL;
+  const foundURL = urlDatabase[shortURL];
+
+  if (!foundURL) {
+    res.render("ErrorMessage");
+    return;
+  }
 
   if (userID) {
     if (checkingUserID(userID, shortURL)) {
       delete urlDatabase[shortURL];
       res.redirect('/urls');
+      return;
     } else {
       res.send("Nice try 🤟");
     }
   } else {
-    res.send("Nice try 🤟");
-  }
-
-  const foundURL = urlDatabase[shortURL];
-
-  if (!req.session.user_id) {
     res.render("registration");
     return;
   }
-  if (!foundURL) {
-    res.render("ErrorMessage");
-    return;
-  }
+
 });
 
 //When users click update button, users are able to update/edit the long URL they entered. If users do not wish to edit the URL, they can just click update button.
@@ -184,7 +226,6 @@ app.post("/urls/:id/update", (req, res) => {
 app.post("/login", (req, res) => {
   const email = req.body.email;
   const password = req.body.password;
-
 
   if (!emailLookUp(email)) {
     res.status(403).send("Status Code 403: Your Email address does not match! Please try again.");
@@ -237,53 +278,6 @@ app.post("/register", (req, res) => {
   req.session.user_id = userInfo.userID;
   res.redirect("/urls");
 });
-
-//Function for checking if user entered email already exists or not.
-function emailLookUp(email) {
-  for (key in users) {
-    if (users[key].userEmail === email) {
-      return true;
-    }
-  }
-  return false;
-}
-
-//Function for checking if user password is correct or not.
-function comparePassword(password, email) {
-  for (key in users) {
-    if (emailLookUp(email)) {
-      if (bcrypt.compareSync(password, users[key].userPassword)) {
-        return true;
-      }
-    }
-  }
-  return false;
-}
-
-//Checking if the user is logged in and assigning new values.
-function urlsForUser(id) {
-  let newURLs = {};
-  for (let key in urlDatabase) {
-    if (urlDatabase[key].userID === id) {
-      newURLs[key] = urlDatabase[key];
-    }
-  }
-  return newURLs;
-}
-
-//Finding userID (key) at certain email address.
-function findUserId(email) {
-  for (let key in users) {
-    if (users[key].userEmail === email) {
-      return key;
-    }
-  }
-}
-
-//Checking if userID with certain shortURL matches with logged in ID
-function checkingUserID(id, shortURL) {
-  return (urlDatabase[shortURL].userID === id);
-}
 
 //Checking if the server is running and listening to port 8080.
 app.listen(PORT, () => {

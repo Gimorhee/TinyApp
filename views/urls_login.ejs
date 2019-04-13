@@ -8,17 +8,32 @@
   <!-- Bootstrap CSS -->
   <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css" integrity="sha384-GJzZqFGwb1QTTN6wy59ffF1BuGJpLSa9DkKMp0DgiMDm4iYMj70gZWKYbI706tWS" crossorigin="anonymous">
   <title>TinyApp</title>
-
-  <h1><strong>TinyApp</strong></h1>
+  <br>
+  <br>
+  <h1 class="container"><strong>TinyApp</strong></h1>
 </head>
 
-<body style="font-size:20px; padding:50px;">
+<style>
+.container{
+  max-width: 210px;
+  margin: auto;
+}
+
+.box{
+  max-width: 165px;
+  margin: auto;
+}
+
+</style>
+
+<body style="text-align:centre; font-size:20px; padding:50px; background-color:#9fd3c7;">
 
 
-<div><a href="/login">Login</a> | <a href="/register">Register</a></div>
+<div class="box"><a href="/login">Login</a> | <a href="/register">Register</a></div>
     <form method="POST" action="/login">
-      <h3>Log-In</h3>
-      <div>
+      <h3 style="width:120px; margin:0 auto;">Log-In</h3>
+      <br>
+      <div style="width:350px; margin:0 auto;">
         <div>
           <p>Email: </p>
           <input class="form-control" type="email" name="email" placeholder="Enter Email Address" style="width: 300px; margin: 1em">
@@ -28,7 +43,10 @@
           <input class="form-control" type="password" name="password" placeholder="Enter Password" style="width: 300px; margin: 1em">
         </div>
       </div>
-      <button type="submit" class="btn btn-dark btn-lg">Log In</button>
+      <br>
+      <div style="width:225px; margin:0 auto;">
+        <button style="width:200px; margin:0 auto;" type="submit" class="btn btn-dark btn-lg">Log In</button>
+      </div>
     </form>
 
 </body>
