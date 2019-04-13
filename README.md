@@ -3,21 +3,21 @@
 TinyApp is a full stack web application built with Node and Express that allows users to shorten long URLs.
 
 ##Final Product
-!["Login Page"]("./img/Login_Page.png")
-!["Update Page"]("./img/Update_Page.png")
-!["URL Page"]("./img/URL_Page.png")
+!["Login Page"](https://github.com/Gimorhee/TinyApp/blob/master/img/Login_Page.png)
+!["Update Page"](https://github.com/Gimorhee/TinyApp/blob/master/img/URL_Page.png)
+!["URL Page"](https://github.com/Gimorhee/TinyApp/blob/master/img/URL_Page.png)
 
 
 ##Dependanices:
-  "bcrypt": "2.0.0",
-  "body-parser": "^1.18.3",
-  "cookie-parser": "^1.4.4",
-  "cookie-session": "^1.3.3",
-  "ejs": "^2.6.1",
-  "express": "^4.16.4"
+  - "bcrypt": "2.0.0",
+  - "body-parser": "^1.18.3",
+  - "cookie-parser": "^1.4.4",
+  - "cookie-session": "^1.3.3",
+  - "ejs": "^2.6.1",
+  - "express": "^4.16.4"
 
 ##devDependencies
-  "nodemon": "^1.18.11"
+  - "nodemon": "^1.18.11"
 
 ##Getting Started
 - Install all dependencies (using the `npm install` command)
